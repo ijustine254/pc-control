@@ -10,17 +10,21 @@
 </head>
 <body>
 <div class="w3-container">
-    <h2>Border Around Table</h2>
-    <p>The w3-border class adds a border around the table.</p>
+    <h2>MIMNET COMPUTER SOLUTIONS</h2>
+    <p>Solutions for everything.</p>
     <table class="w3-table w3-striped w3-border">
         <tr>
             <th>Machine</th>
             <th>Action</th>
         </tr>
-        {% for machine in machines %}
-        <tr>{{ machine.name }}</tr>
-        <tr><a class="w3-button w3-red" href="http://{{ machine.ip }}:9991/shutdown">Shutdown</a></tr>
-        {% endfor %}
+        {% if machines|length > 1 %}
+            {% for machine in machines %}
+                <tr>{{ machine.name }}</tr>
+                <tr>
+                    <a class="w3-button w3-red" href="http://{{ machine.ip }}:9991/shutdown">Shutdown</a>
+                </tr>
+            {% endfor %}
+        {% endif %}
     </table>
 </div>
 </body>

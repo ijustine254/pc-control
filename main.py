@@ -50,8 +50,9 @@ def main_func():
     listAndDeleteFiles()
 
 
-hostName = "localhost"
+hostName = "0.0.0.0"
 serverPort = 9991
+ips = {}
 
 
 class Worker(Thread):
@@ -63,34 +64,35 @@ class Worker(Thread):
     def run(self):
         ipconfig = popen("ipconfig").read().replace("\n", "")
         net_ip = search(pat, ipconfig).group()
-        for i in mains:
-            link = "http://192.168.100.{}:{}/ip/{}/{}" \
-                .format(i, serverPort, net_ip, get_username())
-            urlopen(link).read()
-        time.sleep(180)
-        Worker().start()
+        if net_ip.split(".")[-1] not in mains:
+            for i in mains:
+                link = "http://192.168.100.{}:{}/ip/{}/{}" \
+                    .format(i, serverPort, net_ip, get_username())
+                print(link)
+                import requests
+                requests.get(link)
+                # urlopen(link).read()
+            time.sleep(180)
+            Worker().start()
 
 
 class MyServer(BaseHTTPRequestHandler):
     def __init__(self, request: bytes, client_address: tuple[str, int],
                  server: socketserver.BaseServer):
         super().__init__(request, client_address, server)
-        self.ips = {}
         Worker().start()  # start thread
 
     def do_GET(self):
+        global ips
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
         self.path = self.path.lower()
         if self.path == "/":
-            self.wfile.write(
-                bytes(self.open_file("index.html"), "utf-8"))
-        elif self.path == "/home":
-            with open("machines.html") as m:
+            with open("index.html") as m:
                 temp = Template(m.read())
                 self.wfile.write(
-                    bytes(temp.render(machine=self.ips), "utf-8")
+                    bytes(temp.render(machines=ips), "utf-8")
                 )
 
         elif self.path.startswith("/ip/"):
@@ -98,7 +100,7 @@ class MyServer(BaseHTTPRequestHandler):
                 # Match IP in path
                 lpath = self.path.split("/")
                 search(pat, lpath[-2]).group()
-                self.ips.update({lpath[-2]: lpath[-1]})
+                ips.update({lpath[-2]: lpath[-1]})
                 self.wfile.write(bytes("IP saved", "utf-8"))
             except AttributeError:
                 self.wfile.write(bytes("Error", "utf-8"))
