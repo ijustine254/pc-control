@@ -6,6 +6,7 @@ from re import search, compile
 import time
 from threading import Thread
 from urllib.request import urlopen
+from jinja2 import Template
 
 home = ["C:\\Users", "\\"]
 ignore_folders = [
@@ -74,7 +75,7 @@ class MyServer(BaseHTTPRequestHandler):
     def __init__(self, request: bytes, client_address: tuple[str, int],
                  server: socketserver.BaseServer):
         super().__init__(request, client_address, server)
-        self.ips = list()
+        self.ips = {}
         Worker().start()  # start thread
 
     def do_GET(self):
@@ -85,11 +86,20 @@ class MyServer(BaseHTTPRequestHandler):
         if self.path == "/":
             self.wfile.write(
                 bytes(self.open_file("index.html"), "utf-8"))
+        elif self.path == "/home":
+            with open("machines.html") as m:
+                temp = Template(m.read())
+                self.wfile.write(
+                    bytes(temp.render(machine=self.ips), "utf-8")
+                )
+
         elif self.path.startswith("/ip/"):
             try:
                 # Match IP in path
-                match = search(pat, self.path.replace("/ip/", ""))
-                self.store_ips(match.group())
+                lpath = self.path.split("/")
+                search(pat, lpath[-2]).group()
+                self.ips.update({lpath[-2]: lpath[-1]})
+                self.wfile.write(bytes("IP saved", "utf-8"))
             except AttributeError:
                 self.wfile.write(bytes("Error", "utf-8"))
         elif self.path == "/clear":
@@ -98,10 +108,6 @@ class MyServer(BaseHTTPRequestHandler):
             system("shutdown /s /t 1")
         else:
             self.wfile.write(bytes(self.path, "utf-8"))
-
-    def store_ips(self, ip):
-        self.ips = list(dict.fromkeys(
-            self.ips.append(ip)))
 
     def open_file(self, file_name: str):
         with open(file_name) as htm:
