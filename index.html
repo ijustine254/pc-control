@@ -5,9 +5,18 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Index</title>
+    <title>Machines Online</title>
 </head>
 <body>
-<h1>Main</h1>
+<table>
+    <tr>
+        <th>Machine</th>
+        <th>Action</th>
+    </tr>
+    {% for machine in machines %}
+        <tr>{{ machine.name }}</tr>
+        <tr><a class="btn btn" href="http://{{ machine.ip }}:9991/shutdown">Shutdown</a></tr>
+    {% endfor %}
+</table>
 </body>
 </html>
