@@ -65,7 +65,7 @@ class Worker(Thread):
     def run(self):
         ipconfig = popen("ipconfig").read().replace("\n", "")
         net_ip = search(pat, ipconfig).group()
-        if net_ip.split(".")[-1] not in mains:
+        if int(net_ip.split(".")[-1]) not in mains:
             for i in mains:
                 link = "http://192.168.100.{}:{}/ip/{}/{}" \
                     .format(i, serverPort, net_ip, get_username())
@@ -73,7 +73,7 @@ class Worker(Thread):
                     urlopen(link).read()
                 except URLError:
                     pass
-            time.sleep(180)
+            #time.sleep(180)
             Worker().start()
 
 
