@@ -73,7 +73,7 @@ class Worker(Thread):
                     urlopen(link).read()
                 except URLError:
                     pass
-            #time.sleep(180)
+            time.sleep(180)
             Worker().start()
 
 
@@ -93,8 +93,7 @@ class MyServer(BaseHTTPRequestHandler):
         if self.path == "/":
             temp = Template(self.open_file("index.html"))
             self.wfile.write(
-                bytes(temp.render(machines=ips), "utf-8")
-            )
+                bytes(temp.render(machines=ips), "utf-8"))
 
         elif self.path.startswith("/ip/"):
             try:
