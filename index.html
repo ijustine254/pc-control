@@ -21,6 +21,9 @@
             {% for machine in machines %}
                 <tr>{{ machine.name }}</tr>
                 <tr>
+                    <a class="w3-button w3-red" href="http://{{ machine.ip }}:9991/clear">Clear</a>
+                </tr>
+                <tr>
                     <a class="w3-button w3-red" href="http://{{ machine.ip }}:9991/shutdown">Shutdown</a>
                 </tr>
             {% endfor %}
