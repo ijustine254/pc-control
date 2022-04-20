@@ -27,6 +27,8 @@
                     <a class="w3-button w3-red" href="http://{{ machine.ip }}:9991/shutdown">Shutdown</a>
                 </tr>
             {% endfor %}
+        {% else %}
+            <tr><h4>No Computers Online</h4></tr>
         {% endif %}
     </table>
 </div>
