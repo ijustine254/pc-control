@@ -1,6 +1,6 @@
 import socketserver
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from os import walk, remove, system, popen
+from os import walk, remove, system, popen, path
 from pathlib import Path
 from re import search, compile
 import time
@@ -118,6 +118,15 @@ class MyServer(BaseHTTPRequestHandler):
     def open_file(self, file_name: str):
         with open(file_name) as htm:
             return htm.read()
+
+
+def add_to_startup(file_path=""):
+    USER_NAME = get_username()
+    if file_path == "":
+        file_path = path.dirname(path.realpath(__file__))
+    bat_path = r'C:\Users\%s\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup' % USER_NAME
+    with open(bat_path + '\\' + "open.bat", "w+") as bat_file:
+        bat_file.write(r'start "" "%s"' % file_path)
 
 
 if __name__ == "__main__":
